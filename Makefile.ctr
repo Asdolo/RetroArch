@@ -1,11 +1,15 @@
+DEVKITPRO := /c/workspace/forwarders/retroarch_forwarders/devkitPro
+DEVKITARM := $(DEVKITPRO)/devkitARM_r46
+CTRULIB := $(DEVKITPRO)/ctrulib
+
 TARGET := retroarch_3ds
 LIBRETRO =
 
 DEBUG                   = 0
 GRIFFIN_BUILD           = 1
 WHOLE_ARCHIVE_LINK      = 0
-BUILD_3DSX              = 1
-BUILD_3DS               = 1
+BUILD_3DSX              = 0
+BUILD_3DS               = 0
 BUILD_CIA               = 1
 LIBCTRU_NO_DEPRECATION  = 1
 
@@ -22,6 +26,9 @@ APP_SYSTEM_MODE      = 64MB
 APP_SYSTEM_MODE_EXT  = 124MB
 APP_BIG_TEXT_SECTION = 0
 APP_USE_SVCHAX       = 0
+ROMFS		  := romfs
+
+export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 
 include ctr/Makefile.cores
 
@@ -102,7 +109,7 @@ $(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>dev
 endif
 
 ifeq ($(strip $(CTRULIB)),)
-	CTRULIB = $(DEVKITPRO)/libctru
+$(error "Please set CTRULIB in your environment. export CTRULIB=<path to>ctrulib")
 endif
 
 APP_TITLE         := $(shell echo "$(APP_TITLE)" | cut -c1-128)
@@ -111,7 +118,7 @@ APP_AUTHOR        := $(shell echo "$(APP_AUTHOR)" | cut -c1-128)
 APP_PRODUCT_CODE  := $(shell echo $(APP_PRODUCT_CODE) | cut -c1-16)
 APP_UNIQUE_ID     := $(shell echo $(APP_UNIQUE_ID) | cut -c1-7)
 
-MAKEROM_ARGS_COMMON = -rsf $(APP_RSF) -exefslogo -elf $(TARGET).elf -icon $(TARGET).icn -banner $(TARGET).bnr -DAPP_TITLE="$(APP_TITLE)" -DAPP_PRODUCT_CODE="$(APP_PRODUCT_CODE)" -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -DAPP_SYSTEM_MODE=$(APP_SYSTEM_MODE) -DAPP_SYSTEM_MODE_EXT=$(APP_SYSTEM_MODE_EXT)
+MAKEROM_ARGS_COMMON = -rsf $(APP_RSF) -exefslogo -romfs romfs.bin -elf $(TARGET).elf -icon icon.icn -banner banner.bnr -DAPP_TITLE="$(APP_TITLE)" -DAPP_PRODUCT_CODE="$(APP_PRODUCT_CODE)" -DAPP_UNIQUE_ID=$(APP_UNIQUE_ID) -DAPP_SYSTEM_MODE=$(APP_SYSTEM_MODE) -DAPP_SYSTEM_MODE_EXT=$(APP_SYSTEM_MODE_EXT)
 
 INCDIRS := -I$(CTRULIB)/include
 LIBDIRS := -L. -L$(CTRULIB)/lib
@@ -178,7 +185,7 @@ $(TARGET): $(TARGET_3DSX) $(TARGET_3DS) $(TARGET_CIA) $(TARGET).core
 $(TARGET).3dsx: $(TARGET).elf
 $(TARGET).elf: $(OBJ) libretro_ctr.a
 
-PREFIX		:=	$(DEVKITPRO)/devkitARM/bin/arm-none-eabi-
+PREFIX		:=	$(DEVKITARM)/bin/arm-none-eabi-
 
 CC      := $(PREFIX)gcc
 CXX     := $(PREFIX)g++
@@ -201,13 +208,13 @@ else
 endif
 
 %.o: %.vsh %.gsh
-	$(DEVKITPRO)/devkitARM/bin/picasso $^ -o $*.shbin
-	$(DEVKITPRO)/devkitARM/bin/bin2s $*.shbin | $(PREFIX)as -o $@
+	$(DEVKITARM)/bin/picasso $^ -o $*.shbin
+	$(DEVKITARM)/bin/bin2s $*.shbin | $(PREFIX)as -o $@
 	rm $*.shbin
 
 %.o: %.vsh
-	$(DEVKITPRO)/devkitARM/bin/picasso $^ -o $*.shbin
-	$(DEVKITPRO)/devkitARM/bin/bin2s $*.shbin | $(PREFIX)as -o $@
+	$(DEVKITARM)/bin/picasso $^ -o $*.shbin
+	$(DEVKITARM)/bin/bin2s $*.shbin | $(PREFIX)as -o $@
 	rm $*.shbin
 
 %.o: %.cpp
@@ -242,16 +249,10 @@ $(TARGET).elf: ctr/3dsx_custom_crt0.o
 	$(LD) $(LDFLAGS) $(OBJ) $(LIBDIRS) $(LIBS) -o $@
 	$(NM) -CSn $@ > $(notdir $*.lst)
 
-$(TARGET).bnr: $(APP_BANNER) $(APP_AUDIO)
-	$(BANNERTOOL) makebanner -i "$(APP_BANNER)" -a "$(APP_AUDIO)" -o $@
-
-$(TARGET).icn: $(APP_ICON)
-	$(BANNERTOOL) makesmdh -s "$(APP_TITLE)" -l "$(APP_TITLE)" -p "$(APP_AUTHOR)" -i $(APP_ICON) -o $@
-
 $(TARGET).3ds: $(TARGET).elf $(TARGET).bnr $(TARGET).icn $(APP_RSF)
 	$(MAKEROM) -f cci -o $@ $(MAKEROM_ARGS_COMMON) -DAPP_ENCRYPTED=true
 
-$(TARGET).cia: $(TARGET).elf $(TARGET).bnr $(TARGET).icn $(APP_RSF)
+$(TARGET).cia: $(TARGET).elf $(APP_RSF)
 	$(MAKEROM) -f cia -o $@ $(MAKEROM_ARGS_COMMON) -DAPP_ENCRYPTED=false
 
 $(TARGET).core: $(TARGET).elf
@@ -270,7 +271,7 @@ clean:
 	rm -f $(TARGET).icn
 	rm -f ctr/ctr_config_*.o
 	rm -f ctr/3dsx_custom_crt0.o
+	rm -f romfs.bin
+	./ctr/tools/3dstool.exe -c --romfs-dir romfs/ -f romfs.bin --type romfs
 
 .PHONY: clean
-
-
