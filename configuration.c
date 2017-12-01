@@ -2648,6 +2648,7 @@ static bool config_load_file(const char *path, bool set_defaults,
          global_t   *global = global_get_ptr();
 
          dir_set(RARCH_DIR_SAVEFILE, tmp_str);
+         path_mkdir(dir_get_ptr(RARCH_DIR_SAVEFILE));
 
          if (global)
          {
@@ -2673,6 +2674,7 @@ static bool config_load_file(const char *path, bool set_defaults,
          global_t   *global = global_get_ptr();
 
          dir_set(RARCH_DIR_SAVESTATE, tmp_str);
+         path_mkdir(dir_get_ptr(RARCH_DIR_SAVESTATE));
 
          if (global)
          {

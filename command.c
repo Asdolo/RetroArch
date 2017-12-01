@@ -1447,7 +1447,7 @@ static bool command_event_save_core_config(void)
       overrides_active = true;
    }
 
-   command_event_save_config(config_path, msg, sizeof(msg));
+   //command_event_save_config(config_path, msg, sizeof(msg));
 
    runloop_msg_queue_push(msg, 1, 180, true);
 
@@ -1476,8 +1476,6 @@ static void command_event_save_current_config(enum override_type type)
          if (path_is_empty(RARCH_PATH_CONFIG))
             strlcpy(msg, "[Config]: Config directory not set, cannot save configuration.",
                   sizeof(msg));
-         else
-            command_event_save_config(path_get(RARCH_PATH_CONFIG), msg, sizeof(msg));
          break;
       case OVERRIDE_GAME:
       case OVERRIDE_CORE:

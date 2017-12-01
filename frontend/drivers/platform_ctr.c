@@ -96,7 +96,7 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_CURSOR], g_defaults.dirs[DEFAULT_DIR_PORT],
          "database/cursors", sizeof(g_defaults.dirs[DEFAULT_DIR_CURSOR]));
 
-   //strncpy(g_defaults.path.config, "romfs:/retroarch.cfg", sizeof(g_defaults.path.config));
+   strncpy(g_defaults.path.config, "romfs:/retroarch.cfg", sizeof(g_defaults.path.config));
 
    if (romfsInit()!=0)
    {
