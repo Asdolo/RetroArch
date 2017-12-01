@@ -197,10 +197,10 @@ struct rarch_main_wrap
 {
    int argc;
    char **argv;
-   const char *content_path;
+   char *content_path;
    const char *sram_path;
    const char *state_path;
-   const char *config_path;
+   char *config_path;
    const char *libretro_path;
    bool verbose;
    bool no_content;

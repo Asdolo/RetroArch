@@ -51,6 +51,10 @@
 static enum frontend_fork ctr_fork_mode = FRONTEND_FORK_NONE;
 static const char* elf_path_cst = "sdmc:/retroarch/test.3dsx";
 
+#define MAX_LENGHT_INTERNAL_NAME  50
+
+char internalName[MAX_LENGHT_INTERNAL_NAME + 1];
+
 static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
       void *args, void *params_data)
 {
@@ -75,10 +79,8 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
          "cores", sizeof(g_defaults.dirs[DEFAULT_DIR_CORE]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_CORE_INFO], g_defaults.dirs[DEFAULT_DIR_CORE],
          "info", sizeof(g_defaults.dirs[DEFAULT_DIR_CORE_INFO]));
-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SAVESTATE], g_defaults.dirs[DEFAULT_DIR_CORE],
-         "savestates", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));
-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SRAM], g_defaults.dirs[DEFAULT_DIR_CORE],
-         "savefiles", sizeof(g_defaults.dirs[DEFAULT_DIR_SRAM]));
+   
+
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SYSTEM], g_defaults.dirs[DEFAULT_DIR_CORE],
          "system", sizeof(g_defaults.dirs[DEFAULT_DIR_SYSTEM]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_PLAYLIST], g_defaults.dirs[DEFAULT_DIR_CORE],
@@ -93,8 +95,46 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
          "database/rdb", sizeof(g_defaults.dirs[DEFAULT_DIR_DATABASE]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_CURSOR], g_defaults.dirs[DEFAULT_DIR_PORT],
          "database/cursors", sizeof(g_defaults.dirs[DEFAULT_DIR_CURSOR]));
-   fill_pathname_join(g_defaults.path.config, g_defaults.dirs[DEFAULT_DIR_PORT],
-         file_path_str(FILE_PATH_MAIN_CONFIG), sizeof(g_defaults.path.config));
+
+   //strncpy(g_defaults.path.config, "romfs:/retroarch.cfg", sizeof(g_defaults.path.config));
+
+   if (romfsInit()!=0)
+   {
+     RARCH_LOG("Unable to initialize romfs.\n");
+     exit(0);
+   }
+   else
+   {
+     RARCH_LOG("romfs Init Successful!\n");
+   }
+
+   FILE* path_fp = fopen("romfs:/internal_name.txt", "r");
+   if (!path_fp)
+   {
+     RARCH_LOG("romfs:/internal_name.txt not found.\n");
+     exit(0);
+   }
+   else
+   {
+      RARCH_LOG("Found romfs:/internal_name.txt!.\n");
+      fgets(internalName, sizeof(internalName), path_fp);
+   }
+
+   mkdir("sdmc:/nsui_forwarders_data", 0777);
+   static char forwarderPath [PATH_MAX_LENGTH];
+   snprintf(forwarderPath, PATH_MAX_LENGTH, "sdmc:/nsui_forwarders_data/%s", internalName);
+   mkdir(forwarderPath, 0777);
+
+   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SAVESTATE], forwarderPath,
+         "savestates", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));
+   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SRAM], forwarderPath,
+         "savefiles", sizeof(g_defaults.dirs[DEFAULT_DIR_SRAM]));
+
+   path_mkdir(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
+   path_mkdir(g_defaults.dirs[DEFAULT_DIR_SRAM]);
+
+   dir_set(RARCH_DIR_SAVESTATE, g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
+   dir_set(RARCH_DIR_SAVEFILE, g_defaults.dirs[DEFAULT_DIR_SRAM]);
 }
 
 static void frontend_ctr_deinit(void *data)

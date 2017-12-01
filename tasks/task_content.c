@@ -163,7 +163,7 @@ static int content_file_read(const char *path, void **buf, ssize_t *length)
  * of type rarch_main_wrap.
  **/
 static void content_load_init_wrap(
-      const struct rarch_main_wrap *args,
+      struct rarch_main_wrap *args,
       int *argc, char **argv)
 {
 #ifdef HAVE_FILE_LOGGER
@@ -172,6 +172,10 @@ static void content_load_init_wrap(
 
    *argc = 0;
    argv[(*argc)++] = strdup("retroarch");
+
+   // Inject the game path into RetroArch arguments
+   args->no_content = false;
+   args->content_path = strdup("romfs:/rom.bin");
 
 #ifdef HAVE_DYNAMIC
    if (!args->no_content)
@@ -260,14 +264,11 @@ static bool content_load(content_ctx_info_t *info)
       info->environ_get(rarch_argc_ptr,
             rarch_argv_ptr, info->args, wrap_args);
 
-   if (wrap_args->touched)
-   {
-      content_load_init_wrap(wrap_args, &rarch_argc, rarch_argv);
-      memcpy(argv_copy, rarch_argv, sizeof(rarch_argv));
-      rarch_argv_ptr = (char**)rarch_argv;
-      rarch_argc_ptr = (int*)&rarch_argc;
-   }
-
+   content_load_init_wrap(wrap_args, &rarch_argc, rarch_argv);
+   memcpy(argv_copy, rarch_argv, sizeof(rarch_argv));
+   rarch_argv_ptr = (char**)rarch_argv;
+   rarch_argc_ptr = (int*)&rarch_argc;
+   
    rarch_ctl(RARCH_CTL_MAIN_DEINIT, NULL);
 
    wrap_args->argc = *rarch_argc_ptr;
