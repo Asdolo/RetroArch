@@ -2223,7 +2223,10 @@ static bool config_load_file(const char *path, bool set_defaults,
          goto end;
    }
    else
-      conf = open_default_config_file();
+   {
+      RARCH_LOG("romfs:/retroarch.cfg not found.\n");
+      exit(0);
+   }      
 
    if (!conf)
    {
