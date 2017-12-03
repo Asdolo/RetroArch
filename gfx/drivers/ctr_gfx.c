@@ -460,11 +460,9 @@ static bool ctr_frame(void* data, const void* frame,
 {
    uint32_t diff;
    static uint64_t currentTick,lastTick;
-   touchPosition state_tmp_touch;
    extern GSPGPU_FramebufferInfo topFramebufferInfo;
    extern u8* gfxSharedMemory;
    extern u8 gfxThreadID;
-   uint32_t state_tmp      = 0;
    ctr_video_t       *ctr  = (ctr_video_t*)data;
    static float        fps = 0.0;
    static int total_frames = 0;
@@ -489,31 +487,6 @@ static bool ctr_frame(void* data, const void* frame,
       command_event(CMD_EVENT_QUIT, NULL);
       return true;
    }
-
-   state_tmp = hidKeysDown();
-   hidTouchRead(&state_tmp_touch);
-   if((state_tmp & KEY_TOUCH) && (state_tmp_touch.py < 120))
-   {
-      Handle lcd_handle;
-      u8 not_2DS;
-      extern PrintConsole* currentConsole;
-
-      gfxBottomFramebuffers[0] = ctr->lcd_buttom_on ? (u8*)ctr->empty_framebuffer:
-                                                      (u8*)currentConsole->frameBuffer;
-
-      CFGU_GetModelNintendo2DS(&not_2DS);
-      if(not_2DS && srvGetServiceHandle(&lcd_handle, "gsp::Lcd") >= 0)
-      {
-         u32 *cmdbuf = getThreadCommandBuffer();
-         cmdbuf[0] = ctr->lcd_buttom_on? 0x00120040:  0x00110040;
-         cmdbuf[1] = 2;
-         svcSendSyncRequest(lcd_handle);
-         svcCloseHandle(lcd_handle);
-      }
-
-      ctr->lcd_buttom_on = !ctr->lcd_buttom_on;
-   }
-
 
    if (ctr->p3d_event_pending)
    {

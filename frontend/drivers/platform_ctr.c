@@ -54,6 +54,8 @@ static const char* elf_path_cst = "sdmc:/retroarch/test.3dsx";
 #define MAX_LENGHT_INTERNAL_NAME  50
 
 char internalName[MAX_LENGHT_INTERNAL_NAME + 1];
+u8* bottom_screen_buffer;
+off_t bottom_screen_buffer_size;
 
 static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
       void *args, void *params_data)
@@ -135,6 +137,42 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
 
    dir_set(RARCH_DIR_SAVESTATE, g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
    dir_set(RARCH_DIR_SAVEFILE, g_defaults.dirs[DEFAULT_DIR_SRAM]);
+
+   // Custom bottom screen images
+
+   FILE *file = fopen("romfs:/bottom.bin", "rb");
+
+    if (file)
+    {
+        gfxSetScreenFormat(GFX_BOTTOM, GSP_BGR8_OES);
+        gfxSetDoubleBuffering(GFX_BOTTOM, false);
+        gfxSwapBuffersGpu();
+    
+        // seek to end of file
+        fseek(file, 0, SEEK_END);
+        // file pointer tells us the size
+        bottom_screen_buffer_size = ftell(file);
+        // seek back to start
+        fseek(file, 0, SEEK_SET);
+        //allocate a buffer
+        bottom_screen_buffer = (u8*)(malloc(bottom_screen_buffer_size));
+        //read contents !
+        off_t bytesRead = fread(bottom_screen_buffer, 1, bottom_screen_buffer_size,file);
+        //close the file because we like being nice and tidy
+        fclose(file);
+
+        //We don't need double buffering in this example. In this way we can draw our image only once on screen.
+        gfxSetDoubleBuffering(GFX_BOTTOM, false);
+        u8* fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+        memcpy(fb, bottom_screen_buffer, bottom_screen_buffer_size);
+
+        gfxFlushBuffers();
+        gfxSwapBuffers();  
+    }
+    else
+    {  
+        GSPLCD_PowerOffBacklight(2);
+    }
 }
 
 static void frontend_ctr_deinit(void *data)
@@ -383,10 +421,10 @@ static void frontend_ctr_init(void *data)
 	gfxBottomFramebuffers[1]=linearAlloc(bottomSize);
 
    gfxSetFramebufferInfo(GFX_TOP, 0);
-	gfxSetFramebufferInfo(GFX_BOTTOM, 0);
+	//gfxSetFramebufferInfo(GFX_BOTTOM, 0);
 
-   gfxSet3D(true);
-   consoleInit(GFX_BOTTOM, NULL);
+   //gfxSet3D(true);
+   //consoleInit(GFX_BOTTOM, NULL);
 
    /* enable access to all service calls when possible. */
    if(svchax_init)

@@ -131,14 +131,12 @@ static void ctr_joypad_poll(void)
 {
    uint32_t state_tmp;
    circlePosition state_tmp_left_analog, state_tmp_right_analog;
-   touchPosition state_tmp_touch;
 
    hidScanInput();
 
    state_tmp = hidKeysHeld();
    hidCircleRead(&state_tmp_left_analog);
    irrstCstickRead(&state_tmp_right_analog);
-   hidTouchRead(&state_tmp_touch);
 
    pad_state = 0;
    pad_state |= (state_tmp & KEY_DLEFT) ? (UINT64_C(1) << RETRO_DEVICE_ID_JOYPAD_LEFT) : 0;
@@ -163,15 +161,8 @@ static void ctr_joypad_poll(void)
 
    BIT64_CLEAR(lifecycle_state, RARCH_MENU_TOGGLE);
 
-   if((state_tmp & KEY_TOUCH) && (state_tmp_touch.py > 120))
+   if((state_tmp & KEY_TOUCH))
       BIT64_SET(lifecycle_state, RARCH_MENU_TOGGLE);
-
-   /* panic button */
-   if((state_tmp & KEY_START) &&
-         (state_tmp & KEY_SELECT) &&
-         (state_tmp & KEY_L) &&
-         (state_tmp & KEY_R))
-      command_event(CMD_EVENT_QUIT, NULL);
 
 }
 
