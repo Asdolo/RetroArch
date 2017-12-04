@@ -167,7 +167,9 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
         memcpy(fb, bottom_screen_buffer, bottom_screen_buffer_size);
 
         gfxFlushBuffers();
-        gfxSwapBuffers();  
+        gfxSwapBuffers();
+
+        free(bottom_screen_buffer);
     }
     else
     {  
@@ -423,7 +425,7 @@ static void frontend_ctr_init(void *data)
    gfxSetFramebufferInfo(GFX_TOP, 0);
 	//gfxSetFramebufferInfo(GFX_BOTTOM, 0);
 
-   //gfxSet3D(true);
+   gfxSet3D(false);
    //consoleInit(GFX_BOTTOM, NULL);
 
    /* enable access to all service calls when possible. */
