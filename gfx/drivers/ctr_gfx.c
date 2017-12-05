@@ -207,6 +207,8 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
 
    if(hook == APTHOOK_ONRESTORE)
    {
+      if (!menu_driver_is_alive()) command_event(CMD_EVENT_AUDIO_START, NULL);
+
       GPUCMD_SetBufferOffset(0);
       shaderProgramUse(&ctr->shader);
 
@@ -269,6 +271,9 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
          svcCloseHandle(lcd_handle);
       }
    }
+
+   if ((hook == APTHOOK_ONSUSPEND) || (hook == APTHOOK_ONSLEEP))
+      if (!menu_driver_is_alive()) command_event(CMD_EVENT_AUDIO_STOP, NULL);
 }
 
 static void ctr_vsync_hook(ctr_video_t* ctr)
