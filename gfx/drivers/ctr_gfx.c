@@ -205,10 +205,12 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
    if(!ctr)
       return;
 
-   if(hook == APTHOOK_ONRESTORE)
+   if (hook == APTHOOK_ONRESTORE || hook == APTHOOK_ONWAKEUP)
    {
       if (!menu_driver_is_alive()) command_event(CMD_EVENT_AUDIO_START, NULL);
 
+      turn_bottom_screen(bottom_screen_buffer != 0);
+      
       GPUCMD_SetBufferOffset(0);
       shaderProgramUse(&ctr->shader);
 
@@ -255,21 +257,9 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
    }
 
    if ((hook == APTHOOK_ONSUSPEND))
-      ctr_set_parallax_layer(*(float*)0x1FF81080 != 0.0);
-
-   if((hook == APTHOOK_ONSUSPEND) || (hook == APTHOOK_ONRESTORE))
    {
-      Handle lcd_handle;
-      u8 not_2DS;
-      CFGU_GetModelNintendo2DS(&not_2DS);
-      if(not_2DS && srvGetServiceHandle(&lcd_handle, "gsp::Lcd") >= 0)
-      {
-         u32 *cmdbuf = getThreadCommandBuffer();
-         cmdbuf[0] = ((hook == APTHOOK_ONSUSPEND) || ctr->lcd_buttom_on)? 0x00110040: 0x00120040;
-         cmdbuf[1] = 2;
-         svcSendSyncRequest(lcd_handle);
-         svcCloseHandle(lcd_handle);
-      }
+      ctr_set_parallax_layer(*(float*)0x1FF81080 != 0.0);
+      turn_bottom_screen(TURN_ON);
    }
 
    if ((hook == APTHOOK_ONSUSPEND) || (hook == APTHOOK_ONSLEEP))
@@ -430,7 +420,6 @@ static void* ctr_init(const video_info_t* video,
    ctr->should_resize = true;
    ctr->smooth        = video->smooth;
    ctr->vsync         = video->vsync;
-   ctr->lcd_buttom_on = true;
    ctr->current_buffer_top = 0;
 
    ctr->empty_framebuffer = linearAlloc(320 * 240 * 2);

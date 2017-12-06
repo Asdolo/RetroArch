@@ -23,6 +23,16 @@
 #define CTR_TOP_FRAMEBUFFER_WIDTH   400
 #define CTR_TOP_FRAMEBUFFER_HEIGHT  240
 
+#define MAX_LENGHT_INTERNAL_NAME 64
+
+char internalName[MAX_LENGHT_INTERNAL_NAME];
+u8* bottom_screen_buffer;
+off_t bottom_screen_buffer_size;
+
+extern char internalName[MAX_LENGHT_INTERNAL_NAME];
+extern u8* bottom_screen_buffer;
+extern off_t bottom_screen_buffer_size;
+
 extern const u8 ctr_sprite_shbin[];
 extern const u32 ctr_sprite_shbin_size;
 
@@ -95,7 +105,6 @@ typedef struct ctr_video
    unsigned rotation;
    bool keep_aspect;
    bool should_resize;
-   bool lcd_buttom_on;
    bool msg_rendering_enabled;
 
    void* empty_framebuffer;
@@ -137,6 +146,32 @@ static INLINE void ctr_set_scale_vector(ctr_scale_vector_t* vec,
    vec->u =  1.0 / texture_width;
    vec->v = -1.0 / texture_height;
 }
+
+inline void clearBottomScreen(void) {
+    u8 *frame = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+    memset(frame, 0, 320 * 240 * 3);
+}
+
+
+static void turn_bottom_screen(bool on)
+{
+   if (!on) clearBottomScreen();
+
+   Handle lcd_handle;
+   u8 not_2DS;
+   CFGU_GetModelNintendo2DS(&not_2DS);
+   if(not_2DS && srvGetServiceHandle(&lcd_handle, "gsp::Lcd") >= 0)
+   {
+      u32 *cmdbuf = getThreadCommandBuffer();
+      cmdbuf[0] = (on ? 0x00110040 : 0x00120040);
+      cmdbuf[1] = 2;
+      svcSendSyncRequest(lcd_handle);
+      svcCloseHandle(lcd_handle);
+   }
+}
+
+#define TURN_ON   true
+#define TURN_OFF  false
 
 
 #endif // CTR_COMMON_H__

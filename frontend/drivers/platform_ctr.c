@@ -41,6 +41,7 @@
 #include "audio/audio_driver.h"
 
 #include "ctr/ctr_debug.h"
+#include "../../gfx/common/ctr_common.h"
 
 #ifndef IS_SALAMANDER
 #ifdef HAVE_MENU
@@ -50,12 +51,6 @@
 
 static enum frontend_fork ctr_fork_mode = FRONTEND_FORK_NONE;
 static const char* elf_path_cst = "sdmc:/retroarch/test.3dsx";
-
-#define MAX_LENGHT_INTERNAL_NAME  50
-
-char internalName[MAX_LENGHT_INTERNAL_NAME + 1];
-u8* bottom_screen_buffer;
-off_t bottom_screen_buffer_size;
 
 static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
       void *args, void *params_data)
@@ -173,7 +168,7 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
     }
     else
     {  
-        GSPLCD_PowerOffBacklight(2);
+        turn_bottom_screen(false);
     }
 }
 
@@ -400,7 +395,7 @@ static void frontend_ctr_init(void *data)
       frontend_ctx_ctr.set_fork = NULL;
    }
 
-   verbosity_enable();
+   //verbosity_enable();
 
    gfxInit(GSP_BGR8_OES,GSP_RGB565_OES,false);   
 
@@ -425,7 +420,7 @@ static void frontend_ctr_init(void *data)
    gfxSetFramebufferInfo(GFX_TOP, 0);
 	//gfxSetFramebufferInfo(GFX_BOTTOM, 0);
 
-   gfxSet3D(false);
+   gfxSet3D(true);
    //consoleInit(GFX_BOTTOM, NULL);
 
    /* enable access to all service calls when possible. */
