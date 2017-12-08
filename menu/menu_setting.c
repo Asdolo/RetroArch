@@ -2303,7 +2303,7 @@ static bool setting_append_list(
                settings_data_list_current_add_flags(list, list_info, SD_FLAG_BROWSER_ACTION);
             }
          }
-
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_LOAD_CONTENT_LIST,
@@ -2311,7 +2311,8 @@ static bool setting_append_list(
                &group_info,
                &subgroup_info,
                parent_group);
-
+         */
+         /*
          if (settings->bools.history_list_enable)
          {
             CONFIG_ACTION(
@@ -2322,7 +2323,8 @@ static bool setting_append_list(
                   &subgroup_info,
                   parent_group);
          }
-
+         */
+         /*
          if (string_is_not_equal_fast(settings->arrays.menu_driver, "xmb", 3))
          {
             CONFIG_ACTION(
@@ -2333,7 +2335,7 @@ static bool setting_append_list(
                   &subgroup_info,
                   parent_group);
          }
-
+         */
 #if defined(HAVE_NETWORKING)
          CONFIG_ACTION(
                list, list_info,
@@ -2351,7 +2353,7 @@ static bool setting_append_list(
                &subgroup_info,
                parent_group);
 #endif
-
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_SETTINGS,
@@ -2367,7 +2369,8 @@ static bool setting_append_list(
                &group_info,
                &subgroup_info,
                parent_group);
-
+         */
+         /*
 #ifndef __CELLOS_LV2__
          CONFIG_ACTION(
                list, list_info,
@@ -2378,7 +2381,8 @@ static bool setting_append_list(
                parent_group);
          menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_RESTART_RETROARCH);
 #endif
-
+         */
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_CONFIGURATIONS_LIST,
@@ -2387,7 +2391,8 @@ static bool setting_append_list(
                &subgroup_info,
                parent_group);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_LAKKA_ADVANCED);
-
+         */
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_CONFIGURATIONS,
@@ -2396,7 +2401,8 @@ static bool setting_append_list(
                &subgroup_info,
                parent_group);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_LAKKA_ADVANCED);
-
+         */
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_SAVE_CURRENT_CONFIG,
@@ -2436,7 +2442,8 @@ static bool setting_append_list(
                parent_group);
          menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_MENU_SAVE_CURRENT_CONFIG_OVERRIDE_GAME);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_LAKKA_ADVANCED);
-
+         */
+         /*
          CONFIG_ACTION(
                list, list_info,
                MENU_ENUM_LABEL_HELP_LIST,
@@ -2445,6 +2452,51 @@ static bool setting_append_list(
                &subgroup_info,
                parent_group);
          settings_data_list_current_add_flags(list, list_info, SD_FLAG_LAKKA_ADVANCED);
+         */
+         CONFIG_ACTION(
+                  list, list_info,
+                  MENU_ENUM_LABEL_RESUME_CONTENT,
+                  MENU_ENUM_LABEL_VALUE_RESUME_CONTENT,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group);
+         menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_RESUME);
+
+         CONFIG_ACTION(
+                  list, list_info,
+                  MENU_ENUM_LABEL_RESTART_CONTENT,
+                  MENU_ENUM_LABEL_VALUE_RESTART_CONTENT,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group);
+         menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_RESET);
+         
+         CONFIG_ACTION(
+                  list, list_info,
+                  MENU_ENUM_LABEL_TAKE_SCREENSHOT,
+                  MENU_ENUM_LABEL_VALUE_TAKE_SCREENSHOT,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group);
+         menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_TAKE_SCREENSHOT);
+
+         CONFIG_ACTION(
+                  list, list_info,
+                  MENU_ENUM_LABEL_SAVE_STATE,
+                  MENU_ENUM_LABEL_VALUE_SAVE_STATE,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group);
+         menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_SAVE_STATE);
+
+         CONFIG_ACTION(
+                  list, list_info,
+                  MENU_ENUM_LABEL_LOAD_STATE,
+                  MENU_ENUM_LABEL_VALUE_LOAD_STATE,
+                  &group_info,
+                  &subgroup_info,
+                  parent_group);
+         menu_settings_list_current_add_cmd(list, list_info, CMD_EVENT_LOAD_STATE);
 
 #if !defined(IOS)
          /* Apple rejects iOS apps that lets you forcibly quit an application. */

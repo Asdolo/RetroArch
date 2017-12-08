@@ -6202,6 +6202,7 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
          {
             rarch_system_info_t *system    = runloop_get_system_info();
 
+            /*
             if (system)
             {
                if ( !string_is_empty(system->info.library_name) &&
@@ -6215,8 +6216,8 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
                   menu_displaylist_parse_settings_enum(menu, info,
                         MENU_ENUM_LABEL_START_CORE, PARSE_ACTION, false);
             }
-
-
+            */
+            /*
 #ifndef HAVE_DYNAMIC
             if (frontend_driver_has_fork())
 #endif
@@ -6224,7 +6225,8 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
                menu_displaylist_parse_settings_enum(menu, info,
                      MENU_ENUM_LABEL_CORE_LIST, PARSE_ACTION, false);
             }
-
+            */
+            /*
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_LOAD_CONTENT_LIST,
                   PARSE_ACTION, false);
@@ -6234,6 +6236,7 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_ADD_CONTENT_LIST,
                   PARSE_ACTION, false);
+            */
 #ifdef HAVE_NETWORKING
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_NETPLAY,
@@ -6245,22 +6248,45 @@ bool menu_displaylist_ctl(enum menu_displaylist_ctl_state type, void *data)
                      MENU_ENUM_LABEL_ONLINE_UPDATER,
                      PARSE_ACTION, false);
 #endif
+            /*
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_SETTINGS, PARSE_ACTION, false);
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_INFORMATION_LIST,
                   PARSE_ACTION, false);
+            */
+            /*
 #ifndef HAVE_DYNAMIC
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_RESTART_RETROARCH,
                   PARSE_ACTION, false);
 #endif
+            */
+            /*
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_CONFIGURATIONS_LIST,
                   PARSE_ACTION, false);
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_HELP_LIST,
                   PARSE_ACTION, false);
+            */
+
+            menu_displaylist_parse_settings_enum(menu, info,
+                  MENU_ENUM_LABEL_RESUME_CONTENT,
+                  PARSE_ACTION, false);
+            menu_displaylist_parse_settings_enum(menu, info,
+                  MENU_ENUM_LABEL_RESTART_CONTENT,
+                  PARSE_ACTION, false);
+            menu_displaylist_parse_settings_enum(menu, info,
+                  MENU_ENUM_LABEL_TAKE_SCREENSHOT,
+                  PARSE_ACTION, false);
+            menu_displaylist_parse_settings_enum(menu, info,
+                  MENU_ENUM_LABEL_SAVE_STATE,
+                  PARSE_ACTION, false);
+            menu_displaylist_parse_settings_enum(menu, info,
+                  MENU_ENUM_LABEL_LOAD_STATE,
+                  PARSE_ACTION, false);
+
             menu_displaylist_parse_settings_enum(menu, info,
                   MENU_ENUM_LABEL_QUIT_RETROARCH,
                   PARSE_ACTION, false);

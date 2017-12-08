@@ -249,6 +249,7 @@ static void rgui_render_background(void)
       dst += pitch_in_pixels * 4;
    }
 
+   /*
    if (rgui_framebuf_data)
    {
       rgui_fill_rect(rgui_framebuf_data, fb_pitch, 5, 5, fb_width - 10, 5, rgui_green_filler);
@@ -258,6 +259,7 @@ static void rgui_render_background(void)
       rgui_fill_rect(rgui_framebuf_data, fb_pitch, fb_width - 10, 5, 5, fb_height - 10,
             rgui_green_filler);
    }
+   */
 }
 
 static void rgui_set_message(void *data, const char *message)
@@ -503,6 +505,7 @@ static void rgui_render(void *data, bool is_idle)
    hover_color  = HOVER_COLOR(settings);
    normal_color = NORMAL_COLOR(settings);
 
+   /*
    if (menu_entries_ctl(MENU_ENTRIES_CTL_SHOW_BACK, NULL))
    {
       char back_buf[32];
@@ -519,6 +522,7 @@ static void rgui_render(void *data, bool is_idle)
                back_msg,
                TITLE_COLOR(settings));
    }
+   */
 
    strlcpy(title_buf, string_to_upper(title_buf), sizeof(title_buf));
 
@@ -539,6 +543,7 @@ static void rgui_render(void *data, bool is_idle)
                RGUI_TERM_START_Y(fb_height) + 2, title_msg, hover_color);
    }
 
+   /*
    if (settings->bools.menu_timedate_enable)
    {
       menu_display_ctx_datetime_t datetime;
@@ -558,6 +563,7 @@ static void rgui_render(void *data, bool is_idle)
                (RGUI_TERM_HEIGHT(fb_width, fb_height) * FONT_HEIGHT_STRIDE) +
                RGUI_TERM_START_Y(fb_height) + 2, timedate, hover_color);
    }
+   */
 
    x = RGUI_TERM_START_X(fb_width);
    y = RGUI_TERM_START_Y(fb_height);
