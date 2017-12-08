@@ -2383,6 +2383,54 @@ static bool config_load_file(const char *path, bool set_defaults,
          settings->rewind_buffer_size = buffer_size * UINT64_C(1000000);
    }
 
+   u8 language_3ds = 0;
+   Result res;
+   unsigned int language_ra = RETRO_LANGUAGE_ENGLISH;
+
+   // Read the language field from the config savegame.
+   res = CFGU_GetSystemLanguage(&language_3ds);
+
+   switch (language_3ds)
+   {
+      case CFG_LANGUAGE_JP:
+         language_ra = RETRO_LANGUAGE_JAPANESE;
+         break;
+      case CFG_LANGUAGE_FR:
+         language_ra = RETRO_LANGUAGE_FRENCH;
+         break;
+      case CFG_LANGUAGE_DE:
+         language_ra = RETRO_LANGUAGE_GERMAN;
+         break;
+      case CFG_LANGUAGE_IT:
+         language_ra = RETRO_LANGUAGE_ITALIAN;
+         break;
+      case CFG_LANGUAGE_ES:
+         language_ra = RETRO_LANGUAGE_SPANISH;
+         break;
+      case CFG_LANGUAGE_ZH:
+         language_ra = RETRO_LANGUAGE_CHINESE_SIMPLIFIED;
+         break;
+      case CFG_LANGUAGE_KO:
+         language_ra = RETRO_LANGUAGE_KOREAN;
+         break;
+      case CFG_LANGUAGE_NL:
+         language_ra = RETRO_LANGUAGE_DUTCH;
+         break;
+      case CFG_LANGUAGE_PT:
+         language_ra = RETRO_LANGUAGE_PORTUGUESE_BRAZIL;
+         break;
+      case CFG_LANGUAGE_RU:
+         language_ra = RETRO_LANGUAGE_RUSSIAN;
+         break;
+      case CFG_LANGUAGE_TW:
+         language_ra = RETRO_LANGUAGE_CHINESE_TRADITIONAL;
+         break;
+      default:
+         language_ra = RETRO_LANGUAGE_ENGLISH;
+         break;
+   }
+
+   msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, language_ra);
 
    /* Hexadecimal settings  */
 
