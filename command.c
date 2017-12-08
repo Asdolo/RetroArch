@@ -1742,7 +1742,8 @@ bool command_event(enum event_command cmd, void *data)
       case CMD_EVENT_RESET:
          RARCH_LOG("%s.\n", msg_hash_to_str(MSG_RESET));
          runloop_msg_queue_push(msg_hash_to_str(MSG_RESET), 1, 120, true);
-
+         rarch_menu_running_finished();
+         
 #ifdef HAVE_CHEEVOS
          cheevos_set_cheats();
 #endif
