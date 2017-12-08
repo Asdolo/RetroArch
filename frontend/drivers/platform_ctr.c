@@ -168,7 +168,7 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
     }
     else
     {  
-        turn_bottom_screen(false);
+        turn_bottom_screen(TURN_OFF);
     }
 }
 

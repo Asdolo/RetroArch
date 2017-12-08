@@ -147,15 +147,15 @@ static INLINE void ctr_set_scale_vector(ctr_scale_vector_t* vec,
    vec->v = -1.0 / texture_height;
 }
 
-inline void clearBottomScreen(void) {
+inline void clearBottomScreen(uint bytes) {
     u8 *frame = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
-    memset(frame, 0, 320 * 240 * 3);
+    memset(frame, 0, 320 * 240 * bytes);
 }
 
 
 static void turn_bottom_screen(bool on)
 {
-   if (!on) clearBottomScreen();
+   if (!on) clearBottomScreen(bottom_screen_buffer == NULL ? 2 : 3);
 
    Handle lcd_handle;
    u8 not_2DS;
