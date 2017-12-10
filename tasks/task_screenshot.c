@@ -198,7 +198,6 @@ static bool screenshot_dump(
       bool is_idle,
       bool is_paused)
 {
-   char screenshot_path[PATH_MAX_LENGTH];
    uint8_t *buf                   = NULL;
 #ifdef _XBOX1
    d3d_video_t *d3d               = (d3d_video_t*)video_driver_get_ptr(true);
@@ -207,16 +206,6 @@ static bool screenshot_dump(
    retro_task_t *task             = (retro_task_t*)calloc(1, sizeof(*task));
    screenshot_task_state_t *state = (screenshot_task_state_t*)
          calloc(1, sizeof(*state));
-   const char *screenshot_dir     = settings->paths.directory_screenshot;
-
-   screenshot_path[0]             = '\0';
-
-   if (string_is_empty(screenshot_dir) || settings->bools.screenshots_in_content_dir)
-   {
-      fill_pathname_basedir(screenshot_path, name_base,
-            sizeof(screenshot_path));
-      screenshot_dir = screenshot_path;
-   }
 
    state->is_idle             = is_idle;
    state->is_paused           = is_paused;
@@ -242,7 +231,7 @@ static bool screenshot_dump(
          snprintf(state->shotname, sizeof(state->shotname),
                "%s.png", path_basename(name_base));
 
-      fill_pathname_join(state->filename, screenshot_dir,
+      fill_pathname_join(state->filename, g_defaults.dirs[DEFAULT_DIR_SCREENSHOT],
             state->shotname, sizeof(state->filename));
    }
 
@@ -344,12 +333,6 @@ static bool take_screenshot_choice(const char *name_base, bool savestate,
    void *frame_data            = NULL;
    const void* old_data        = NULL;
    settings_t *settings        = config_get_ptr();
-   const char *screenshot_dir  = settings->paths.directory_screenshot;
-
-   /* No way to infer screenshot directory. */
-   if (     string_is_empty(screenshot_dir)
-         && string_is_empty(name_base))
-      return false;
 
    if (video_driver_supports_viewport_read())
    {
@@ -357,36 +340,9 @@ static bool take_screenshot_choice(const char *name_base, bool savestate,
       video_driver_set_texture_enable(false, false);
       if (!is_idle)
          video_driver_cached_frame();
-#if defined(VITA)
-      return take_screenshot_raw(name_base, NULL, savestate, is_idle, is_paused);
-#else
-      return take_screenshot_viewport(name_base, savestate, is_idle, is_paused);
-#endif
    }
 
-   if (!has_valid_framebuffer)
-      return take_screenshot_raw(name_base, NULL, savestate, is_idle, is_paused);
-
-   if (!video_driver_supports_read_frame_raw())
-      return false;
-
-   video_driver_cached_frame_get(&old_data, &old_width, &old_height,
-         &old_pitch);
-
-   frame_data = video_driver_read_frame_raw(
-         &old_width, &old_height, &old_pitch);
-
-   video_driver_cached_frame_set(old_data, old_width, old_height,
-         old_pitch);
-
-   if (frame_data)
-   {
-      video_driver_set_cached_frame_ptr(frame_data);
-      if (take_screenshot_raw(name_base, frame_data, savestate, is_idle, is_paused))
-         ret = true;
-   }
-
-   return ret;
+   return take_screenshot_raw(name_base, NULL, savestate, is_idle, is_paused);
 }
 
 bool take_screenshot(const char *name_base, bool silence, bool has_valid_framebuffer)

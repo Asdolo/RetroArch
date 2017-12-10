@@ -126,9 +126,12 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
          "savestates", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SRAM], forwarderPath,
          "savefiles", sizeof(g_defaults.dirs[DEFAULT_DIR_SRAM]));
-
+   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SCREENSHOT], forwarderPath,
+         "screenshots", sizeof(g_defaults.dirs[DEFAULT_DIR_SCREENSHOT]));
+   
    path_mkdir(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
    path_mkdir(g_defaults.dirs[DEFAULT_DIR_SRAM]);
+   path_mkdir(g_defaults.dirs[DEFAULT_DIR_SCREENSHOT]);
 
    dir_set(RARCH_DIR_SAVESTATE, g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
    dir_set(RARCH_DIR_SAVEFILE, g_defaults.dirs[DEFAULT_DIR_SRAM]);
