@@ -524,6 +524,7 @@ static void rgui_render(void *data, bool is_idle)
    }
    */
 
+   /*
    strlcpy(title_buf, string_to_upper(title_buf), sizeof(title_buf));
 
    if (rgui_framebuf_data)
@@ -532,7 +533,9 @@ static void rgui_render(void *data, bool is_idle)
                   - utf8len(title_buf)) * FONT_WIDTH_STRIDE / 2),
             RGUI_TERM_START_X(fb_width),
             title_buf, TITLE_COLOR(settings));
+   */
 
+   /*
    if (settings->bools.menu_core_enable && 
          menu_entries_get_core_title(title_msg, sizeof(title_msg)) == 0)
    {
@@ -542,6 +545,7 @@ static void rgui_render(void *data, bool is_idle)
                (RGUI_TERM_HEIGHT(fb_width, fb_height) * FONT_HEIGHT_STRIDE) +
                RGUI_TERM_START_Y(fb_height) + 2, title_msg, hover_color);
    }
+   */
 
    /*
    if (settings->bools.menu_timedate_enable)
@@ -596,7 +600,7 @@ static void rgui_render(void *data, bool is_idle)
       menu_entry_get_rich_label((unsigned)i, entry_path, sizeof(entry_path));
 
       ticker.s        = entry_title_buf;
-      ticker.len      = RGUI_TERM_WIDTH(fb_width) - (entry_spacing + 1 + 2);
+      ticker.len      = RGUI_TERM_WIDTH(fb_width);
       ticker.idx      = frame_count / RGUI_TERM_START_X(fb_width);
       ticker.str      = entry_path;
       ticker.selected = entry_selected;
@@ -612,13 +616,9 @@ static void rgui_render(void *data, bool is_idle)
       entry_title_buf_utf8len = utf8len(entry_title_buf);
       entry_title_buf_len     = strlen(entry_title_buf);
 
-      snprintf(message, sizeof(message), "%c %-*.*s %-*s",
+      snprintf(message, sizeof(message), "%c %s",
             entry_selected ? '>' : ' ',
-            (int)(RGUI_TERM_WIDTH(fb_width) - (entry_spacing + 1 + 2) - entry_title_buf_utf8len + entry_title_buf_len),
-            (int)(RGUI_TERM_WIDTH(fb_width) - (entry_spacing + 1 + 2) - entry_title_buf_utf8len + entry_title_buf_len),
-            entry_title_buf,
-            entry_spacing,
-            type_str_buf);
+            entry_title_buf);
 
       if (rgui_framebuf_data)
          blit_line(x, y, message,
@@ -706,7 +706,7 @@ static void *rgui_init(void **userdata, bool video_is_threaded)
       rgui_fill_rect(rgui_framebuf_data, 
             fb_pitch, 0, fb_height,
             fb_width, 4, rgui_gray_filler);
-
+   
    rgui->last_width  = fb_width;
    rgui->last_height = fb_height;
 

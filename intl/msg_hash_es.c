@@ -1786,7 +1786,7 @@ const char *msg_hash_to_str_es(enum msg_hash_enums msg)
       case MENU_ENUM_LABEL_VALUE_LOAD_CONTENT_HISTORY:
          return "Cargar archivos recientes";
       case MENU_ENUM_LABEL_VALUE_LOAD_STATE:
-         return "Carga rápida";
+         return "Cargar punto de restauración";
       case MENU_ENUM_LABEL_VALUE_LOCATION_ALLOW:
          return "Permitir ubicación";
       case MENU_ENUM_LABEL_VALUE_LOCATION_DRIVER:
@@ -1910,7 +1910,7 @@ const char *msg_hash_to_str_es(enum msg_hash_enums msg)
       case MENU_ENUM_LABEL_VALUE_PRESENT:
          return "Presente";
       case MENU_ENUM_LABEL_VALUE_QUIT_RETROARCH:
-         return "Abandonar RetroArch";
+         return "Salir del juego";
       case MENU_ENUM_LABEL_VALUE_RDB_ENTRY_DESCRIPTION:
          return "Descripción";
       case MENU_ENUM_LABEL_VALUE_RDB_ENTRY_DEVELOPER:
@@ -1934,7 +1934,7 @@ const char *msg_hash_to_str_es(enum msg_hash_enums msg)
       case MENU_ENUM_LABEL_VALUE_RDB_ENTRY_START_CONTENT:
          return "Ejecutar contenido";
       case MENU_ENUM_LABEL_VALUE_REBOOT:
-         return "Reiniciar";
+         return "Reiniciar juego";
       case MENU_ENUM_LABEL_VALUE_RECORDING_CONFIG_DIRECTORY:
          return "Carpeta de configuración de grabación";
       case MENU_ENUM_LABEL_VALUE_RECORDING_OUTPUT_DIRECTORY:
@@ -1998,7 +1998,7 @@ const char *msg_hash_to_str_es(enum msg_hash_enums msg)
       case MENU_ENUM_LABEL_VALUE_SAVE_NEW_CONFIG:
          return "Guardar configuración nueva";
       case MENU_ENUM_LABEL_VALUE_SAVE_STATE:
-         return "Guardado rápido";
+         return "Crear punto de restauración";
       case MENU_ENUM_LABEL_VALUE_SAVING_SETTINGS:
          return "Guardado";
       case MENU_ENUM_LABEL_VALUE_SCREENSHOT_DIRECTORY:
