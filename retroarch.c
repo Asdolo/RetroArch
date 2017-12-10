@@ -2216,6 +2216,7 @@ void runloop_msg_queue_push(const char *msg,
    msg_info.duration = duration;
    msg_info.flush    = flush;
 
+   /*
    if (runloop_msg_queue)
    {
       msg_queue_push(runloop_msg_queue, msg_info.msg,
@@ -2229,6 +2230,7 @@ void runloop_msg_queue_push(const char *msg,
                   msg_info.prio, msg_info.duration, msg_info.flush);
       }
    }
+   */
 
 #ifdef HAVE_THREADS
    slock_unlock(_runloop_msg_queue_lock);
