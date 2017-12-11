@@ -2863,18 +2863,6 @@ static enum runloop_state runloop_check_state(
       }
    }
 
-   /* Check movie record toggle */
-   {
-      static bool old_pressed = false;
-      bool pressed            = runloop_cmd_press(
-            current_input, RARCH_MOVIE_RECORD_TOGGLE);
-
-      if (pressed && !old_pressed)
-         bsv_movie_check();
-
-      old_pressed             = pressed;
-   }
-
    /* Check shader prev/next */
    {
       static bool old_shader_next = false;

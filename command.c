@@ -273,7 +273,6 @@ static const struct cmd_map map[] = {
    { "STATE_SLOT_PLUS",        RARCH_STATE_SLOT_PLUS },
    { "STATE_SLOT_MINUS",       RARCH_STATE_SLOT_MINUS },
    { "REWIND",                 RARCH_REWIND },
-   { "MOVIE_RECORD_TOGGLE",    RARCH_MOVIE_RECORD_TOGGLE },
    { "PAUSE_TOGGLE",           RARCH_PAUSE_TOGGLE },
    { "FRAMEADVANCE",           RARCH_FRAMEADVANCE },
    { "RESET",                  RARCH_RESET },
@@ -297,13 +296,12 @@ static const struct cmd_map map[] = {
    { "GRAB_MOUSE_TOGGLE",      RARCH_GRAB_MOUSE_TOGGLE },
    { "GAME_FOCUS_TOGGLE",      RARCH_GAME_FOCUS_TOGGLE },
    { "MENU_TOGGLE",            RARCH_MENU_TOGGLE },
-   { "MENU_UP",                RETRO_DEVICE_ID_JOYPAD_UP },
-   { "MENU_DOWN",              RETRO_DEVICE_ID_JOYPAD_DOWN },
-   { "MENU_LEFT",              RETRO_DEVICE_ID_JOYPAD_LEFT },
-   { "MENU_RIGHT",             RETRO_DEVICE_ID_JOYPAD_RIGHT },
-   { "MENU_A",                 RETRO_DEVICE_ID_JOYPAD_A },
-   { "MENU_B",                 RETRO_DEVICE_ID_JOYPAD_B },
-   { "MENU_B",                 RETRO_DEVICE_ID_JOYPAD_B },
+   { "MENU_UP",                RARCH_MENU_UP },
+   { "MENU_DOWN",              RARCH_MENU_DOWN },
+   { "MENU_LEFT",              RARCH_MENU_LEFT },
+   { "MENU_RIGHT",             RARCH_MENU_RIGHT },
+   { "MENU_OK",                RARCH_MENU_OK },
+   { "MENU_CANCEL",            RARCH_MENU_CANCEL }
 };
 
 static bool command_get_arg(const char *tok,

@@ -524,8 +524,8 @@ static void rgui_render(void *data, bool is_idle)
    }
    */
 
-   /*
-   strlcpy(title_buf, string_to_upper(title_buf), sizeof(title_buf));
+   
+   strlcpy(title_buf, title_buf, sizeof(title_buf));
 
    if (rgui_framebuf_data)
       blit_line(
@@ -533,7 +533,7 @@ static void rgui_render(void *data, bool is_idle)
                   - utf8len(title_buf)) * FONT_WIDTH_STRIDE / 2),
             RGUI_TERM_START_X(fb_width),
             title_buf, TITLE_COLOR(settings));
-   */
+   
 
    /*
    if (settings->bools.menu_core_enable && 

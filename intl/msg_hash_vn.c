@@ -196,10 +196,6 @@ int menu_hash_get_help_vn_enum(enum msg_hash_enums msg, char *s, size_t len)
                   " \n"
                   "Cần phải bật chức năng quay lại.");
             break;
-         case RARCH_MOVIE_RECORD_TOGGLE:
-            snprintf(s, len,
-                  "Bật/tắt ghi chép video.");
-            break;
          default:
             if (string_is_empty(s))
                strlcpy(s, msg_hash_to_str(MENU_ENUM_LABEL_VALUE_NO_INFORMATION_AVAILABLE), len);

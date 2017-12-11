@@ -508,9 +508,7 @@ int menu_entry_action(menu_entry_t *entry, unsigned i, enum menu_action action)
          menu_driver_ctl(MENU_NAVIGATION_CTL_ASCEND_ALPHABET, NULL);
          break;
       case MENU_ACTION_CANCEL:
-         if (cbs && cbs->action_cancel)
-            ret = cbs->action_cancel(entry->path,
-                  entry->label, entry->type, i);
+            rarch_menu_running_finished();
          break;
 
       case MENU_ACTION_OK:
