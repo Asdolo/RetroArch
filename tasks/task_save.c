@@ -820,59 +820,90 @@ error:
 }
 
 /**
- * content_load_state_cb:
- * @path      : path that state will be loaded from.
- * Load a state from disk to memory.
+ * content_save_state:
+ * @path      : path of saved state that shall be written to.
+ * @save_to_disk: If false, saves the state onto undo_load_buf.
+ * Save a state from memory to disk.
  *
+ * Returns: true if successful, false otherwise.
  **/
-static void content_load_state_cb(void *task_data,
-                           void *user_data, const char *error)
+bool content_save_state(const char *path, bool save_to_disk, bool autosave)
 {
    retro_ctx_serialize_info_t serial_info;
+   retro_ctx_size_info_t info;
+   bool ret    = false;
+   void *data  = NULL;
+
+   core_serialize_size(&info);
+
+   RARCH_LOG("%s: \"%s\".\n",
+         msg_hash_to_str(MSG_SAVING_STATE),
+         path);
+
+   if (info.size == 0)
+      return false;
+
+   data = malloc(info.size);
+
+   if (!data)
+      return false;
+
+   RARCH_LOG("%s: %d %s.\n",
+         msg_hash_to_str(MSG_STATE_SIZE),
+         (int)info.size,
+         msg_hash_to_str(MSG_BYTES));
+
+   serial_info.data = data;
+   serial_info.size = info.size;
+   ret              = core_serialize(&serial_info);
+   
+   if (ret)
+      ret = filestream_write_file(path, data, info.size);
+   else
+   {
+      RARCH_ERR("%s \"%s\".\n",
+            msg_hash_to_str(MSG_FAILED_TO_SAVE_STATE_TO),
+            path);
+   }
+   
+   free(data);
+   
+   return ret;
+}
+
+/**
+ * content_load_state:
+ * @path      : path that state will be loaded from.
+ * @load_to_backup_buffer: If true, the state will be loaded into undo_save_buf.
+ * Load a state from disk to memory.
+ *
+ * Returns: true if successful, false otherwise.
+ *
+ *
+ **/
+bool content_load_state(const char *path,
+      bool load_to_backup_buffer, bool autoload)
+{
    unsigned i;
-   bool ret;
-   load_task_data_t *load_data = (load_task_data_t*)task_data;
-   ssize_t size                = load_data->size;
+   ssize_t size;
+   retro_ctx_serialize_info_t serial_info;
    unsigned num_blocks         = 0;
-   void *buf                   = load_data->data;
+   void *buf                   = NULL;
    struct sram_block *blocks   = NULL;
    settings_t *settings        = config_get_ptr();
+   bool ret                    = filestream_read_file(path, &buf, &size);
 
    RARCH_LOG("%s: \"%s\".\n",
          msg_hash_to_str(MSG_LOADING_STATE),
-         load_data->path);
+         path);
 
-   if (size < 0 || !buf)
+   if (!ret || size < 0)
       goto error;
 
    RARCH_LOG("%s: %u %s.\n",
          msg_hash_to_str(MSG_STATE_SIZE),
          (unsigned)size,
          msg_hash_to_str(MSG_BYTES));
-
-   /* This means we're backing up the file in memory, so content_undo_save_state()
-   can restore it */
-   if (load_data->load_to_backup_buffer)
-   {
-      /* If we were previously backing up a file, let go of it first */
-      if (undo_save_buf.data)
-      {
-         free(undo_save_buf.data);
-         undo_save_buf.data = NULL;
-      }
-
-      undo_save_buf.data = malloc(size);
-      if (!undo_save_buf.data)
-         goto error;
-
-      memcpy(undo_save_buf.data, buf, size);
-      undo_save_buf.size = size;
-      strlcpy(undo_save_buf.path, load_data->path, sizeof(undo_save_buf.path));
-
-      free(buf);
-      free(load_data);
-      return;
-   }
 
    if (settings->bools.block_sram_overwrite && task_save_files
          && task_save_files->size)
@@ -925,9 +956,6 @@ static void content_load_state_cb(void *task_data,
    serial_info.data_const = buf;
    serial_info.size       = size;
 
-   /* Backup the current state so we can undo this load */
-   content_save_state("RAM", false, false);
-
    ret                    = core_unserialize(&serial_info);
 
     /* Flush back. */
@@ -956,288 +984,15 @@ static void content_load_state_cb(void *task_data,
       goto error;
 
    free(buf);
-   free(load_data);
-
-   return;
-
-error:
-   RARCH_ERR("%s \"%s\".\n",
-         msg_hash_to_str(MSG_FAILED_TO_LOAD_STATE),
-         load_data->path);
-   if (buf)
-      free(buf);
-   free(load_data);
-}
-
-/**
- * save_state_cb:
- *
- * Called after the save state is done. Takes a screenshot if needed.
- **/
-static void save_state_cb(void *task_data,
-                           void *user_data, const char *error)
-{
-   save_task_state_t *state = (save_task_state_t*)task_data;
-   char               *path = strdup(state->path);
-
-   if (state->thumbnail_enable)
-      take_screenshot(path, true, state->has_valid_framebuffer);
-
-   free(path);
-}
-
-/**
- * task_push_save_state:
- * @path : file path of the save state
- * @data : the save state data to write
- * @size : the total size of the save state
- *
- * Create a new task to save the content state.
- **/
-static void task_push_save_state(const char *path, void *data, size_t size, bool autosave)
-{
-   retro_task_t       *task = (retro_task_t*)calloc(1, sizeof(*task));
-   save_task_state_t *state = (save_task_state_t*)calloc(1, sizeof(*state));
-   settings_t     *settings = config_get_ptr();
-
-   if (!task || !state)
-      goto error;
-
-   strlcpy(state->path, path, sizeof(state->path));
-   state->data             = data;
-   state->size             = size;
-   state->autosave         = autosave;
-   state->mute             = autosave; /* don't show OSD messages if we are auto-saving */
-   state->thumbnail_enable = settings->bools.savestate_thumbnail_enable;
-   state->state_slot       = settings->ints.state_slot;
-   state->has_valid_framebuffer  = video_driver_cached_frame_has_valid_framebuffer();
-
-   task->type              = TASK_TYPE_BLOCKING;
-   task->state             = state;
-   task->handler           = task_save_handler;
-   task->callback          = save_state_cb;
-   task->title             = strdup(msg_hash_to_str(MSG_SAVING_STATE));
-   task->mute              = state->mute;
-
-   task_queue_push(task);
-
-   return;
-
-error:
-   if (data)
-      free(data);
-   if (state)
-      free(state);
-   if (task)
-      free(task);
-}
-
-/**
- * content_load_and_save_state_cb:
- * @path      : path that state will be loaded from.
- * Load then save a state.
- *
- **/
-static void content_load_and_save_state_cb(void *task_data,
-                           void *user_data, const char *error)
-{
-   load_task_data_t *load_data = (load_task_data_t*)task_data;
-   char                  *path = strdup(load_data->path);
-   void                  *data = load_data->undo_data;
-   size_t                 size = load_data->undo_size;
-   bool               autosave = load_data->autosave;
-
-   content_load_state_cb(task_data, user_data, error);
-
-   task_push_save_state(path, data, size, autosave);
-
-   free(path);
-}
-
-/**
- * task_push_load_and_save_state:
- * @path : file path of the save state
- * @data : the save state data to write
- * @size : the total size of the save state
- * @load_to_backup_buffer : If true, the state will be loaded into undo_save_buf.
- *
- * Create a new task to load current state first into a backup buffer (for undo)
- * and then save the content state.
- **/
-static void task_push_load_and_save_state(const char *path, void *data,
-      size_t size, bool load_to_backup_buffer, bool autosave)
-{
-   retro_task_t      *task     = (retro_task_t*)calloc(1, sizeof(*task));
-   save_task_state_t *state    = (save_task_state_t*)calloc(1, sizeof(*state));
-   settings_t        *settings = config_get_ptr();
-
-   if (!task || !state)
-      goto error;
-
-   strlcpy(state->path, path, sizeof(state->path));
-   state->load_to_backup_buffer = load_to_backup_buffer;
-   state->undo_size  = size;
-   state->undo_data  = data;
-   state->autosave   = autosave;
-   state->mute       = autosave; /* don't show OSD messages if we are auto-saving */
-   if(load_to_backup_buffer)
-      state->mute       = true;
-   state->state_slot = settings->ints.state_slot;
-   state->has_valid_framebuffer  = video_driver_cached_frame_has_valid_framebuffer();
-
-   task->state       = state;
-   task->type        = TASK_TYPE_BLOCKING;
-   task->handler     = task_load_handler;
-   task->callback    = content_load_and_save_state_cb;
-   task->title       = strdup(msg_hash_to_str(MSG_LOADING_STATE));
-   task->mute        = state->mute;
-
-   task_queue_push(task);
-
-   return;
-
-error:
-   if (data)
-      free(data);
-   if (state)
-      free(state);
-   if (task)
-      free(task);
-}
-
-/**
- * content_save_state:
- * @path      : path of saved state that shall be written to.
- * @save_to_disk: If false, saves the state onto undo_load_buf.
- * Save a state from memory to disk.
- *
- * Returns: true if successful, false otherwise.
- **/
-bool content_save_state(const char *path, bool save_to_disk, bool autosave)
-{
-   retro_ctx_serialize_info_t serial_info;
-   retro_ctx_size_info_t info;
-   bool ret    = false;
-   void *data  = NULL;
-
-   core_serialize_size(&info);
-
-   RARCH_LOG("%s: \"%s\".\n",
-         msg_hash_to_str(MSG_SAVING_STATE),
-         path);
-
-   if (info.size == 0)
-      return false;
-
-   data = malloc(info.size);
-
-   if (!data)
-      return false;
-
-   RARCH_LOG("%s: %d %s.\n",
-         msg_hash_to_str(MSG_STATE_SIZE),
-         (int)info.size,
-         msg_hash_to_str(MSG_BYTES));
-
-   serial_info.data = data;
-   serial_info.size = info.size;
-   ret              = core_serialize(&serial_info);
-
-   if (ret)
-   {
-      if (save_to_disk)
-      {
-         if (path_file_exists(path) && !autosave)
-         {
-            /* Before overwritting the savestate file, load it into a buffer
-            to allow undo_save_state() to work */
-            /* TODO/FIXME - Use msg_hash_to_str here */
-            RARCH_LOG("%s ...\n",
-                  msg_hash_to_str(MSG_FILE_ALREADY_EXISTS_SAVING_TO_BACKUP_BUFFER));
-
-            task_push_load_and_save_state(path, data, info.size, true, autosave);
-         }
-         else
-            task_push_save_state(path, data, info.size, autosave);
-      }
-      else
-      {
-         /* save_to_disk is false, which means we are saving the state
-         in undo_load_buf to allow content_undo_load_state() to restore it */
-
-         /* If we were holding onto an old state already, clean it up first */
-         if (undo_load_buf.data)
-         {
-            free(undo_load_buf.data);
-            undo_load_buf.data = NULL;
-         }
-
-         undo_load_buf.data = malloc(info.size);
-         if (!undo_load_buf.data)
-         {
-            free(data);
-            return false;
-         }
-
-         memcpy(undo_load_buf.data, data, info.size);
-         free(data);
-         undo_load_buf.size = info.size;
-         strlcpy(undo_load_buf.path, path, sizeof(undo_load_buf.path));
-      }
-   }
-   else
-   {
-      free(data);
-      RARCH_ERR("%s \"%s\".\n",
-            msg_hash_to_str(MSG_FAILED_TO_SAVE_STATE_TO),
-            path);
-   }
-
-   return ret;
-}
-
-/**
- * content_load_state:
- * @path      : path that state will be loaded from.
- * @load_to_backup_buffer: If true, the state will be loaded into undo_save_buf.
- * Load a state from disk to memory.
- *
- * Returns: true if successful, false otherwise.
- *
- *
- **/
-bool content_load_state(const char *path,
-      bool load_to_backup_buffer, bool autoload)
-{
-   retro_task_t       *task     = (retro_task_t*)calloc(1, sizeof(*task));
-   save_task_state_t *state     = (save_task_state_t*)calloc(1, sizeof(*state));
-   settings_t *settings         = config_get_ptr();
-
-   if (!task || !state)
-      goto error;
-
-   strlcpy(state->path, path, sizeof(state->path));
-   state->load_to_backup_buffer = load_to_backup_buffer;
-   state->autoload              = autoload;
-   state->state_slot            = settings->ints.state_slot;
-   state->has_valid_framebuffer  = video_driver_cached_frame_has_valid_framebuffer();
-
-   task->type                   = TASK_TYPE_BLOCKING;
-   task->state                  = state;
-   task->handler                = task_load_handler;
-   task->callback               = content_load_state_cb;
-   task->title                  = strdup(msg_hash_to_str(MSG_LOADING_STATE));
-
-   task_queue_push(task);
 
    return true;
 
 error:
-   if (state)
-      free(state);
-   if (task)
-      free(task);
-
+   RARCH_ERR("%s \"%s\".\n",
+         msg_hash_to_str(MSG_FAILED_TO_LOAD_STATE),
+         path);
+   if (buf)
+      free(buf);
    return false;
 }
 

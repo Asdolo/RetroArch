@@ -180,13 +180,7 @@ unsigned menu_event(uint64_t input, uint64_t trigger_input)
       if (delay_count >= delay_timer)
       {
          uint64_t input_repeat = 0;
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_UP);
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_DOWN);
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_LEFT);
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_RIGHT);
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_L);
-         BIT32_SET(input_repeat, RETRO_DEVICE_ID_JOYPAD_R);
-
+         
          set_scroll           = true;
          first_held           = false;
          trigger_input |= input & input_repeat;
