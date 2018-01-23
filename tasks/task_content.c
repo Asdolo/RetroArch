@@ -173,9 +173,25 @@ static void content_load_init_wrap(
    *argc = 0;
    argv[(*argc)++] = strdup("retroarch");
 
+   char romPath[MAX_LENGHT_INTERNAL_NAME];
+
+   FILE* path_fp = fopen("romfs:/rom_path.txt", "r");
+   if (!path_fp)
+   {
+     RARCH_LOG("romfs:/rom_path.txt not found.\n");
+     exit(0);
+   }
+   else
+   {
+      RARCH_LOG("Found romfs:/rom_path.txt!.\n");
+      fgets(romPath, sizeof(romPath), path_fp);
+   }
+
+   //fclose(path_fp);
+
    // Inject the game path into RetroArch arguments
    args->no_content = false;
-   args->content_path = strdup("romfs:/rom.bin");
+   args->content_path = strdup(romPath);
 
 #ifdef HAVE_DYNAMIC
    if (!args->no_content)

@@ -57,12 +57,10 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
 {
    (void)args;
 
-#ifndef IS_SALAMANDER
-#if defined(HAVE_LOGGER)
-   logger_init();
-#elif defined(HAVE_FILE_LOGGER)
-   retro_main_log_file_init("sdmc:/retroarch/retroarch-log.txt");
-#endif
+   mkdir("sdmc:/nsui_forwarders_data", 0777);
+
+#ifdef HAVE_FILE_LOGGER
+   retro_main_log_file_init("sdmc:/nsui_forwarders_data/retroarch-forwarders-log.txt");
 #endif
 
    fill_pathname_basedir(g_defaults.dirs[DEFAULT_DIR_PORT], elf_path_cst, sizeof(g_defaults.dirs[DEFAULT_DIR_PORT]));
@@ -114,13 +112,14 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
       fgets(internalName, sizeof(internalName), path_fp);
    }
 
-   mkdir("sdmc:/nsui_forwarders_data", 0777);
+   //fclose(path_fp);
+
    static char forwarderPath [PATH_MAX_LENGTH];
    snprintf(forwarderPath, PATH_MAX_LENGTH, "sdmc:/nsui_forwarders_data/%s", internalName);
    mkdir(forwarderPath, 0777);
 
-  fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SYSTEM], "romfs:/",
-         "", sizeof(g_defaults.dirs[DEFAULT_DIR_SYSTEM]));
+   snprintf(g_defaults.dirs[DEFAULT_DIR_SYSTEM], sizeof(g_defaults.dirs[DEFAULT_DIR_SYSTEM]), "romfs:");
+
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SAVESTATE], forwarderPath,
          "savestates", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SRAM], forwarderPath,
@@ -134,6 +133,7 @@ static void frontend_ctr_get_environment_settings(int *argc, char *argv[],
 
    dir_set(RARCH_DIR_SAVESTATE, g_defaults.dirs[DEFAULT_DIR_SAVESTATE]);
    dir_set(RARCH_DIR_SAVEFILE, g_defaults.dirs[DEFAULT_DIR_SRAM]);
+   dir_set(RARCH_DIR_SYSTEM, g_defaults.dirs[DEFAULT_DIR_SYSTEM]);
 
    // Custom bottom screen images
 

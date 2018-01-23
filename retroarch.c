@@ -1831,17 +1831,6 @@ bool rarch_ctl(enum rarch_ctl_state state, void *data)
             if (!runloop_core_options)
                return false;
 
-            /* check if game options file was just created and flush
-               to that file instead */
-            if(!path_is_empty(RARCH_PATH_CORE_OPTIONS))
-            {
-               core_option_manager_flush_game_specific(runloop_core_options,
-                     path_get(RARCH_PATH_CORE_OPTIONS));
-               path_clear(RARCH_PATH_CORE_OPTIONS);
-            }
-            else
-               core_option_manager_flush(runloop_core_options);
-
             if (runloop_game_options_active)
                runloop_game_options_active = false;
 
