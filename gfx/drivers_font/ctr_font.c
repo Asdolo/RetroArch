@@ -262,19 +262,9 @@ static void ctr_font_render_line(
    GPU_SetViewport(NULL,
          VIRT_TO_PHYS(ctr->drawbuffers.top.left),
          0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-         ctr->video_mode == CTR_VIDEO_MODE_800x240 
-         ? CTR_TOP_FRAMEBUFFER_WIDTH * 2 : CTR_TOP_FRAMEBUFFER_WIDTH);
+         CTR_TOP_FRAMEBUFFER_WIDTH);
 
    GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, v - ctr->vertex_cache.current);
-
-   if (ctr->video_mode == CTR_VIDEO_MODE_3D)
-   {
-      GPU_SetViewport(NULL,
-                      VIRT_TO_PHYS(ctr->drawbuffers.top.right),
-                      0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-                      CTR_TOP_FRAMEBUFFER_WIDTH);
-      GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, v - ctr->vertex_cache.current);
-   }
 
 #if 0
    v = font->vertices;

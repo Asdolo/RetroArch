@@ -47,49 +47,6 @@
 #include "../../tasks/tasks_internal.h"
 #endif
 
-static INLINE void ctr_check_3D_slider(ctr_video_t* ctr)
-{
-   float slider_val             = *(float*)0x1FF81080;
-   ctr_video_mode_enum old_mode = ctr->video_mode;
-
-   if (slider_val == 0.0)
-      ctr->video_mode = CTR_VIDEO_MODE_NORMAL;
-   else if (slider_val < 0.2)
-      ctr->video_mode = CTR_VIDEO_MODE_800x240;
-   else if (slider_val < 0.5)
-      ctr->video_mode = CTR_VIDEO_MODE_400x240;
-   else
-      ctr->video_mode = CTR_VIDEO_MODE_3D;
-
-   if (ctr->video_mode)
-   {
-      switch (ctr->video_mode)
-      {
-         case CTR_VIDEO_MODE_800x240:
-         case CTR_VIDEO_MODE_400x240:
-            ctr_set_parallax_layer(false);
-            break;
-         case CTR_VIDEO_MODE_3D:
-            {
-               s16 offset = (slider_val - 0.6) * 10.0;
-               ctr->frame_coords[1] = ctr->frame_coords[0];
-               ctr->frame_coords[2] = ctr->frame_coords[0];
-
-               ctr->frame_coords[1].x0 -= offset;
-               ctr->frame_coords[1].x1 -= offset;
-               ctr->frame_coords[2].x0 += offset;
-               ctr->frame_coords[2].x1 += offset;
-
-               GSPGPU_FlushDataCache(ctr->frame_coords, 3 * sizeof(ctr_vertex_t));
-               ctr_set_parallax_layer(true);
-               break;
-            }
-         default:
-            break;
-      }
-   }
-}
-
 static INLINE void ctr_set_screen_coords(ctr_video_t * ctr)
 {
    if (ctr->rotation == 0)
@@ -246,17 +203,8 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
       ctr->p3d_event_pending = false;
    }
 
-   if((hook == APTHOOK_ONSUSPEND) && (ctr->video_mode == CTR_VIDEO_MODE_400x240))
-   {
-      memcpy(gfxTopRightFramebuffers[ctr->current_buffer_top],
-            gfxTopLeftFramebuffers[ctr->current_buffer_top],
-            400 * 240 * 3);
-      GSPGPU_FlushDataCache(gfxTopRightFramebuffers[ctr->current_buffer_top], 400 * 240 * 3);
-   }
-
    if ((hook == APTHOOK_ONSUSPEND))
    {
-      ctr_set_parallax_layer(*(float*)0x1FF81080 != 0.0);
       turn_bottom_screen(TURN_ON);
    }
 
@@ -421,7 +369,6 @@ static void* ctr_init(const video_info_t* video,
    ctr->should_resize = true;
    ctr->smooth        = video->smooth;
    ctr->vsync         = video->vsync;
-   ctr->current_buffer_top = 0;
 
    ctr->empty_framebuffer = linearAlloc(320 * 240 * 2);
    memset(ctr->empty_framebuffer, 0, 320 * 240 * 2);
@@ -580,7 +527,7 @@ static bool ctr_frame(void* data, const void* frame,
       ctr_update_viewport(ctr, video_info);
 
    ctrGuSetMemoryFill(true, (u32*)ctr->drawbuffers.top.left, 0x00000000,
-                    (u32*)ctr->drawbuffers.top.left + 2 * CTR_TOP_FRAMEBUFFER_WIDTH * CTR_TOP_FRAMEBUFFER_HEIGHT,
+                    (u32*)ctr->drawbuffers.top.left + CTR_TOP_FRAMEBUFFER_WIDTH * CTR_TOP_FRAMEBUFFER_HEIGHT,
                     0x201, NULL, 0x00000000,
                     0,
                     0x201);
@@ -641,8 +588,6 @@ static bool ctr_frame(void* data, const void* frame,
                   GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_EDGE) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_EDGE),
                   ctr->rgb32 ? GPU_RGBA8: GPU_RGB565);
 
-   ctr_check_3D_slider(ctr);
-
    /* ARGB --> RGBA  */
    if (ctr->rgb32)
    {
@@ -669,32 +614,7 @@ static bool ctr_frame(void* data, const void* frame,
                     0xFF0000);
    }
 
-   GPU_SetViewport(NULL,
-                   VIRT_TO_PHYS(ctr->drawbuffers.top.left),
-                   0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-                   ctr->video_mode == CTR_VIDEO_MODE_800x240 ? CTR_TOP_FRAMEBUFFER_WIDTH * 2 : CTR_TOP_FRAMEBUFFER_WIDTH);
-
-   if (ctr->video_mode == CTR_VIDEO_MODE_3D)
-   {
-      if (ctr->menu_texture_enable)
-      {
-         ctrGuSetAttributeBuffersAddress(VIRT_TO_PHYS(&ctr->frame_coords[1]));
-         GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, 1);
-         ctrGuSetAttributeBuffersAddress(VIRT_TO_PHYS(&ctr->frame_coords[2]));
-      }
-      else
-      {
-         ctrGuSetAttributeBuffersAddress(VIRT_TO_PHYS(ctr->frame_coords));
-         GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, 1);
-      }
-      GPU_SetViewport(NULL,
-                      VIRT_TO_PHYS(ctr->drawbuffers.top.right),
-                      0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-                      CTR_TOP_FRAMEBUFFER_WIDTH);
-   }
-   else
-      ctrGuSetAttributeBuffersAddress(VIRT_TO_PHYS(ctr->frame_coords));
-
+   ctrGuSetAttributeBuffersAddress(VIRT_TO_PHYS(ctr->frame_coords));
    GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, 1);
 
    /* restore */
@@ -720,17 +640,9 @@ static bool ctr_frame(void* data, const void* frame,
          GPU_SetViewport(NULL,
                          VIRT_TO_PHYS(ctr->drawbuffers.top.left),
                          0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-                         ctr->video_mode == CTR_VIDEO_MODE_800x240 ? CTR_TOP_FRAMEBUFFER_WIDTH * 2 : CTR_TOP_FRAMEBUFFER_WIDTH);
+                         CTR_TOP_FRAMEBUFFER_WIDTH);
          GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, 1);
 
-         if (ctr->video_mode == CTR_VIDEO_MODE_3D)
-         {
-            GPU_SetViewport(NULL,
-                            VIRT_TO_PHYS(ctr->drawbuffers.top.right),
-                            0, 0, CTR_TOP_FRAMEBUFFER_HEIGHT,
-                            CTR_TOP_FRAMEBUFFER_WIDTH);
-            GPU_DrawArray(GPU_GEOMETRY_PRIM, 0, 1);
-         }
       }
 
       ctr->msg_rendering_enabled = true;
@@ -752,55 +664,12 @@ static bool ctr_frame(void* data, const void* frame,
 
    ctrGuDisplayTransfer(true, ctr->drawbuffers.top.left,
                         240,
-                        ctr->video_mode == CTR_VIDEO_MODE_800x240 ? 800 : 400,
+                        400,
                         CTRGU_RGBA8,
-                        gfxTopLeftFramebuffers[ctr->current_buffer_top], 240,CTRGU_RGB8, CTRGU_MULTISAMPLE_NONE);
+                        gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), 240,CTRGU_RGB8, CTRGU_MULTISAMPLE_NONE);
 
-
-   if ((ctr->video_mode == CTR_VIDEO_MODE_400x240) || (ctr->video_mode == CTR_VIDEO_MODE_3D))
-      ctrGuDisplayTransfer(true, ctr->drawbuffers.top.right,
-                           240,
-                           400,
-                           CTRGU_RGBA8,
-                           gfxTopRightFramebuffers[ctr->current_buffer_top], 240,CTRGU_RGB8, CTRGU_MULTISAMPLE_NONE);
-
-
-   /* Swap buffers : */
-
-   topFramebufferInfo.
-      active_framebuf           = ctr->current_buffer_top;
-   topFramebufferInfo.
-      framebuf0_vaddr           = (u32*)gfxTopLeftFramebuffers[ctr->current_buffer_top];
-
-   if(ctr->video_mode == CTR_VIDEO_MODE_800x240)
-   {
-      topFramebufferInfo.
-         framebuf1_vaddr        = (u32*)(gfxTopLeftFramebuffers[ctr->current_buffer_top] + 240 * 3);
-      topFramebufferInfo.
-         framebuf_widthbytesize = 240 * 3 * 2;
-   }
-   else
-   {
-      topFramebufferInfo.
-         framebuf1_vaddr        = (u32*)gfxTopRightFramebuffers[ctr->current_buffer_top];
-      topFramebufferInfo.
-         framebuf_widthbytesize = 240 * 3;
-   }
-
-
-   topFramebufferInfo.format    = (1<<8)|(1<<5)|GSP_BGR8_OES;
-   topFramebufferInfo.
-      framebuf_dispselect       = ctr->current_buffer_top;
-   topFramebufferInfo.unk       = 0x00000000;
-
-   u8* framebufferInfoHeader    = gfxSharedMemory+0x200+gfxThreadID*0x80;
-	GSPGPU_FramebufferInfo* 
-      framebufferInfo           = (GSPGPU_FramebufferInfo*)&framebufferInfoHeader[0x4];
-	framebufferInfoHeader[0x0]  ^= 1;
-	framebufferInfo[framebufferInfoHeader[0x0]] = topFramebufferInfo;
-	framebufferInfoHeader[0x1]   = 1;
-
-   ctr->current_buffer_top     ^= 1;
+   gfxSwapBuffersGpu();
+   
    ctr->p3d_event_pending       = true;
    ctr->ppf_event_pending       = true;
 

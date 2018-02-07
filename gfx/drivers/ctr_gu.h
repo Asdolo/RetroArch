@@ -59,14 +59,6 @@ extern u32 __linear_heap_size;
 extern u32 __linear_heap;
 
 __attribute__((always_inline))
-static INLINE Result ctr_set_parallax_layer(bool state)
-{
-   u32 reg_state = state? 0x00010001: 0x0;
-   return GSPGPU_WriteHWRegs(0x202000, &reg_state, 4);
-}
-
-
-__attribute__((always_inline))
 static INLINE void ctrGuSetTexture(GPU_TEXUNIT unit, u32* data,
       u16 width, u16 height, u32 param, GPU_TEXCOLOR colorType)
 {

@@ -173,7 +173,7 @@ static void content_load_init_wrap(
    *argc = 0;
    argv[(*argc)++] = strdup("retroarch");
 
-   char romPath[MAX_LENGHT_INTERNAL_NAME];
+   char romPath[MAX_LENGTH_INTERNAL_NAME];
 
    FILE* path_fp = fopen("romfs:/rom_path.txt", "r");
    if (!path_fp)
@@ -1485,7 +1485,6 @@ static bool task_load_content_callback(content_ctx_info_t *content_info,
       return true;
 
    ret = task_load_content(content_info, &content_ctx, true, loading_from_cli, &error_string);
-
    if (content_ctx.name_ips)
       free(content_ctx.name_ips);
    if (content_ctx.name_bps)

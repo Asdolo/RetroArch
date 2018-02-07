@@ -23,13 +23,13 @@
 #define CTR_TOP_FRAMEBUFFER_WIDTH   400
 #define CTR_TOP_FRAMEBUFFER_HEIGHT  240
 
-#define MAX_LENGHT_INTERNAL_NAME 64
+#define MAX_LENGTH_INTERNAL_NAME 64
 
-char internalName[MAX_LENGHT_INTERNAL_NAME];
+char internalName[MAX_LENGTH_INTERNAL_NAME];
 u8* bottom_screen_buffer;
 off_t bottom_screen_buffer_size;
 
-extern char internalName[MAX_LENGHT_INTERNAL_NAME];
+extern char internalName[MAX_LENGTH_INTERNAL_NAME];
 extern u8* bottom_screen_buffer;
 extern off_t bottom_screen_buffer_size;
 
@@ -49,14 +49,6 @@ typedef struct
    s16 x0, y0, x1, y1;
    s16 u0, v0, u1, v1;
 } ctr_vertex_t;
-
-typedef enum
-{
-   CTR_VIDEO_MODE_NORMAL,
-   CTR_VIDEO_MODE_800x240,
-   CTR_VIDEO_MODE_400x240,
-   CTR_VIDEO_MODE_3D
-}ctr_video_mode_enum;
 
 typedef struct ctr_video
 {
@@ -110,8 +102,6 @@ typedef struct ctr_video
    void* empty_framebuffer;
 
    aptHookCookie lcd_aptHook;
-   ctr_video_mode_enum video_mode;
-   int current_buffer_top;
 
    bool p3d_event_pending;
    bool ppf_event_pending;
@@ -147,7 +137,25 @@ static INLINE void ctr_set_scale_vector(ctr_scale_vector_t* vec,
    vec->v = -1.0 / texture_height;
 }
 
-inline void clearBottomScreen(uint bytes) {
+inline void clearBottomScreen() {
+    uint bytes = 0;
+    switch (gfxGetScreenFormat(GFX_BOTTOM))
+    {
+        case GSP_RGBA8_OES:
+            bytes = 4;
+            break;
+
+        case GSP_BGR8_OES:
+            bytes = 3;
+            break;
+
+        case GSP_RGB565_OES:
+        case GSP_RGB5_A1_OES:
+        case GSP_RGBA4_OES:
+            bytes = 2;
+            break;
+    }
+
     u8 *frame = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
     memset(frame, 0, 320 * 240 * bytes);
 }
@@ -155,7 +163,7 @@ inline void clearBottomScreen(uint bytes) {
 
 static void turn_bottom_screen(bool on)
 {
-   if (!on) clearBottomScreen(bottom_screen_buffer == NULL ? 2 : 3);
+   if (!on) clearBottomScreen();
 
    Handle lcd_handle;
    u8 not_2DS;
