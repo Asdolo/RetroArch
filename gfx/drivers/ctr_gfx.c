@@ -162,9 +162,9 @@ static void ctr_lcd_aptHook(APT_HookType hook, void* param)
    if(!ctr)
       return;
 
-   if (hook == APTHOOK_ONRESTORE)
+   if (hook == APTHOOK_ONRESTORE || hook == APTHOOK_ONWAKEUP)
    {
-      turn_bottom_screen(bottom_screen_buffer != NULL);
+      turn_bottom_screen(bottom_screen_buffer == NULL ? TURN_OFF : TURN_ON);
 
       GPUCMD_SetBufferOffset(0);
       shaderProgramUse(&ctr->shader);
